@@ -6,6 +6,9 @@ MAINTAINER Christophe Mehay cmehay@online.net
 EXPOSE 80
 EXPOSE 443
 
+# Install port
+ADD     sources.list    /etc/apt/sources.list.d/port.conf
+
 # Install Nginx.
 RUN \
   apt-get update && \
@@ -34,7 +37,7 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf \
 # Install go
 ENV GOPATH /tmp/go
 RUN mkdir /tmp/go
-RUN apt-get install golang
+RUN apt-get -y install golang
 
 # Build Forego
 RUN go get -u github.com/ddollar/forego
