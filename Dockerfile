@@ -1,11 +1,29 @@
-FROM nginx:1.7.7
-MAINTAINER Jason Wilder jwilder@litl.com
+# Pull base image.
+FROM onlinelabs/ubuntu
+MAINTAINER Christophe Mehay cmehay@online.net
 
-# Install wget and install/updates certificates
+# Expose ports.
+EXPOSE 80
+EXPOSE 443
+
+# Install Nginx.
+RUN \
+  apt-get update && \
+  apt-get install -y nginx && \
+  rm -rf /var/lib/apt/lists/* && \
+  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
+  chown -R www-data:www-data /var/lib/nginx
+
+# Define mountable directories.
+VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx"]
+
+# Define working directory.
+WORKDIR /etc/nginx
+
+# Install/updates certificates
 RUN apt-get update \
  && apt-get install -y -q --no-install-recommends \
     ca-certificates \
-    wget \
  && apt-get clean \
  && rm -r /var/lib/apt/lists/*
 
@@ -13,15 +31,25 @@ RUN apt-get update \
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf \
  && sed -i 's/# server_names_hash_bucket/server_names_hash_bucket/g' /etc/nginx/nginx.conf
 
- # Install Forego
-RUN wget -P /usr/local/bin https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
- && chmod u+x /usr/local/bin/forego
+# Install go
+ENV GOPATH /tmp/go
+RUN mkdir /tmp/go
+RUN apt-get install golang
+
+# Build Forego
+RUN go get -u github.com/ddollar/forego
+# Install Forego
+RUN cp /tmp/go/bin/forego /usr/local/bin/forego
 
 ENV DOCKER_GEN_VERSION 0.3.6
 
-RUN wget https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
+# Build docker-gen
+RUN go get -u github.com/jwilder/docker-gen
+# Install docker-gen
+RUN cp /tmp/go/bin/docker-gen /usr/local/bin/docker-gen
+
+# Clean go build
+RUN rm -rf /tmp/go
 
 COPY . /app/
 WORKDIR /app/
