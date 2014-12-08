@@ -53,6 +53,9 @@ RUN cp /tmp/go/bin/docker-gen /usr/local/bin/docker-gen
 # Clean go build
 RUN rm -rf /tmp/go
 
+# remove nginx default site
+RUN rm /etc/nginx/sites-enabled/default
+
 COPY . /app/
 WORKDIR /app/
 
