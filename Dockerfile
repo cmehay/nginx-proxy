@@ -37,7 +37,7 @@ RUN echo "daemon off;" >> /etc/nginx/nginx.conf \
 # Install go
 ENV GOPATH /tmp/go
 RUN mkdir /tmp/go
-RUN apt-get update && apt-get install -y -q golang git
+RUN apt-get update && apt-get install -y -q golang git mercurial
 
 # Build Forego
 RUN go get -u github.com/ddollar/forego
