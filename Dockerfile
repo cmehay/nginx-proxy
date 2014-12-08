@@ -55,6 +55,7 @@ RUN rm -rf /tmp/go
 
 # remove nginx default site
 RUN rm /etc/nginx/sites-enabled/default
+RUN rm /etc/nginx/sites-available/default
 
 COPY . /app/
 WORKDIR /app/
